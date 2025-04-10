@@ -136,7 +136,7 @@ export default function Home() {
       updated.filter((m) => m.round === 'Finał').length === 0
     ) {
       const final = generateNextRound(updated.filter((m) => m.round === 'Półfinał'), 'Finał');
-      setKnockoutMatches((prev) => [...prev, ...final, ...third]);
+      setKnockoutMatches((prev) => [...prev, ...final]);
     }
   };
 
