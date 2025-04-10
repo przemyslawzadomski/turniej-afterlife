@@ -30,7 +30,7 @@ const handleStartTournament = () => {
 };
   return (
     <div className="mt-6 bg-gray-800 p-4 rounded-2xl shadow-md">
-      <h2 className="text-xl font-bold mb-4">Lista graczy ({players.length}/12)</h2>
+      <h2 className="text-xl font-bold mb-4">Lista graczy ({players.length})</h2>
       {players.length === 0 ? (
         <p className="text-gray-500">Brak graczy 😅</p>
       ) : (
