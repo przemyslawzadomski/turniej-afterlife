@@ -64,11 +64,15 @@ export default function Home() {
   };
 
   const handleStartTournament = () => {
-    if (players.length !== 12) return;
+    if (players.length < 6 || players.length % 2 !== 0) {
+      alert('Liczba graczy musi być parzysta i minimum 6');
+      return;
+    }
 
     const shuffled = shuffle(players);
-    const groupA = shuffled.slice(0, 6);
-    const groupB = shuffled.slice(6, 12);
+    const half = Math.floor(shuffled.length / 2);
+    const groupA = shuffled.slice(0, half);
+    const groupB = shuffled.slice(half);
 
     setGroups([
       { name: 'A', players: groupA },
@@ -142,7 +146,7 @@ export default function Home() {
 
   return (
     <main className="min-h-screen p-8 bg-gray-900 text-white">
-      <h1 className="text-3xl font-bold mb-6">Turniej AFTERLIFE 🔥</h1>
+      <h1 className="text-3xl font-bold mb-6">Turniej FIFA 25 🔥</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
         <PlayerForm onAddPlayer={handleAddPlayer} />
@@ -150,10 +154,12 @@ export default function Home() {
       </div>
 
       <button
-        disabled={players.length !== 12}
+        disabled={players.length < 6 || players.length % 2 !== 0}
         onClick={handleStartTournament}
         className={`mt-6 w-full py-3 text-white font-bold rounded-lg transition ${
-          players.length === 12 ? 'bg-green-600 hover:bg-green-700' : 'bg-gray-400 cursor-not-allowed'
+          players.length >= 6 && players.length % 2 === 0
+            ? 'bg-green-600 hover:bg-green-700'
+            : 'bg-gray-400 cursor-not-allowed'
         }`}
       >
         Rozpocznij turniej
@@ -183,99 +189,99 @@ export default function Home() {
         </div>
       )}
 
-      {groups && groups.map((group) => {
-        const groupMatches = matches.filter((m) => m.group === group.name);
-        const standings = calculateGroupStandings(group.players, groupMatches);
+      {groups &&
+        groups.map((group) => {
+          const groupMatches = matches.filter((m) => m.group === group.name);
+          const standings = calculateGroupStandings(group.players, groupMatches);
 
-        return (
-          <div key={group.name} className="mt-8 bg-gray-800 p-4 rounded-2xl shadow-md">
-            <h2 className="text-xl font-bold mb-4">Tabela grupy {group.name}</h2>
-            <table className="w-full text-sm text-white">
-              <thead>
-                <tr className="border-b border-gray-600">
-                  <th className="text-left py-1">Gracz</th>
-                  <th>Pkt</th>
-                  <th>GF</th>
-                  <th>GA</th>
-                  <th>+/-</th>
-                </tr>
-              </thead>
-              <tbody>
-                {standings.map((s, index) => (
-                  <tr key={index} className="border-b border-gray-700">
-                    <td className="py-1 flex items-center gap-2">
-                      <Image src={`/logos/${s.player.logo}`} alt={s.player.name} width={20} height={20} />
-                      {s.player.name}
-                    </td>
-                    <td className="text-center">{s.points}</td>
-                    <td className="text-center">{s.goalsFor}</td>
-                    <td className="text-center">{s.goalsAgainst}</td>
-                    <td className="text-center">{s.goalDiff}</td>
+          return (
+            <div key={group.name} className="mt-8 bg-gray-800 p-4 rounded-2xl shadow-md">
+              <h2 className="text-xl font-bold mb-4">Tabela grupy {group.name}</h2>
+              <table className="w-full text-sm text-white">
+                <thead>
+                  <tr className="border-b border-gray-600">
+                    <th className="text-left py-1">Gracz</th>
+                    <th>Pkt</th>
+                    <th>GF</th>
+                    <th>GA</th>
+                    <th>+/-</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        );
-      })}
+                </thead>
+                <tbody>
+                  {standings.map((s, index) => (
+                    <tr key={index} className="border-b border-gray-700">
+                      <td className="py-1 flex items-center gap-2">
+                        <Image src={`/logos/${s.player.logo}`} alt={s.player.name} width={20} height={20} />
+                        {s.player.name}
+                      </td>
+                      <td className="text-center">{s.points}</td>
+                      <td className="text-center">{s.goalsFor}</td>
+                      <td className="text-center">{s.goalsAgainst}</td>
+                      <td className="text-center">{s.goalDiff}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          );
+        })}
 
-      {groups && matches.every((m) => m.scoreHome !== null && m.scoreAway !== null) && knockoutMatches.length === 0 && (
-        <div className="mt-8 text-center">
-          <button
-            className="px-6 py-3 bg-purple-600 rounded text-white hover:bg-purple-700 font-bold"
-            onClick={() => {
-              const standingsA = calculateGroupStandings(groups[0].players, matches.filter((m) => m.group === 'A'));
-              const standingsB = calculateGroupStandings(groups[1].players, matches.filter((m) => m.group === 'B'));
-              const generated = generateKnockoutMatches(groups, standingsA, standingsB);
-              setKnockoutMatches(generated);
-            }}
-          >
-            Rozpocznij fazę pucharową
-          </button>
+      {groups &&
+        matches.every((m) => m.scoreHome !== null && m.scoreAway !== null) &&
+        knockoutMatches.length === 0 && (
+          <div className="mt-8 text-center">
+            <button
+              className="px-6 py-3 bg-purple-600 rounded text-white hover:bg-purple-700 font-bold"
+              onClick={() => {
+                const standingsA = calculateGroupStandings(groups[0].players, matches.filter((m) => m.group === 'A'));
+                const standingsB = calculateGroupStandings(groups[1].players, matches.filter((m) => m.group === 'B'));
+                const generated = generateKnockoutMatches(groups, standingsA, standingsB);
+                setKnockoutMatches(generated);
+              }}
+            >
+              Rozpocznij fazę pucharową
+            </button>
+          </div>
+        )}
+
+      {knockoutMatches.length > 0 && (
+        <div className="mt-12">
+          <h2 className="text-2xl font-bold mb-4">Faza pucharowa</h2>
+
+          {['Ćwierćfinał', 'Półfinał', 'Finał'].map((round) => {
+            const roundMatches = knockoutMatches.filter((m) => m.round === round);
+            if (roundMatches.length === 0) return null;
+
+            return (
+              <div key={round} className="mb-6">
+                <h3 className="text-xl font-semibold mb-2">{round}</h3>
+                <ul className="space-y-2">
+                  {roundMatches.map((match, index) => (
+                    <li
+                      key={index}
+                      className="bg-gray-800 p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-700"
+                      onClick={() => handleKnockoutClick(match)}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Image src={`/logos/${match.home.logo}`} alt={match.home.name} width={24} height={24} />
+                        {match.home.name} vs {match.away.name}
+                        <Image src={`/logos/${match.away.logo}`} alt={match.away.name} width={24} height={24} />
+                      </span>
+                      <span>{match.scoreHome ?? '-'} : {match.scoreAway ?? '-'}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            );
+          })}
+
+          {knockoutMatches.find((m) => m.round === 'Finał' && m.winner) && (
+            <div className="mt-8 p-4 bg-green-700 text-center rounded-lg text-xl font-bold">
+              🏆 Zwycięzca turnieju: {knockoutMatches.find((m) => m.round === 'Finał')?.winner?.name} 🏆
+            </div>
+          )}
         </div>
       )}
-
-{knockoutMatches.length > 0 && (
-  <div className="mt-12">
-    <h2 className="text-2xl font-bold mb-4">Faza pucharowa</h2>
-
-    {['Ćwierćfinał', 'Półfinał', 'Finał'].map((round) => {
-      const roundMatches = knockoutMatches.filter((m) => m.round === round);
-      if (roundMatches.length === 0) return null;
-
-      return (
-        <div key={round} className="mb-6">
-          <h3 className="text-xl font-semibold mb-2">{round}</h3>
-          <ul className="space-y-2">
-            {roundMatches.map((match, index) => (
-              <li
-                key={index}
-                className="bg-gray-800 p-4 rounded-lg flex justify-between items-center cursor-pointer hover:bg-gray-700"
-                onClick={() => handleKnockoutClick(match)}
-              >
-                <span className="flex items-center gap-2">
-                  <Image src={`/logos/${match.home.logo}`} alt={match.home.name} width={24} height={24} />
-                  {match.home.name} vs {match.away.name}
-                  <Image src={`/logos/${match.away.logo}`} alt={match.away.name} width={24} height={24} />
-                </span>
-                <span>
-                  {match.scoreHome ?? '-'} : {match.scoreAway ?? '-'}
-                </span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      );
-    })}
-
-    {knockoutMatches.find((m) => m.round === 'Finał' && m.winner) && (
-      <div className="mt-8 p-4 bg-green-700 text-center rounded-lg text-xl font-bold">
-        🏆 Zwycięzca turnieju: {knockoutMatches.find((m) => m.round === 'Finał')?.winner?.name} 🏆
-      </div>
-    )}
-  </div>
-)}
-
 
       <MatchModal
         isOpen={isModalOpen}
